@@ -1,0 +1,144 @@
+{
+  "runs": [
+    {
+      "run_id": "RUN-57453d37-c12a-47db-b9af-cabcc9bf9d24",
+      "execution_mode": "DISCOVERY",
+      "status": "COMPLETED",
+      "current_step": 8,
+      "llm_calls": 8,
+      "mcp_tool_calls": 8,
+      "total_tokens": 31874,
+      "falkordb_compute_ms": 25.972829,
+      "wall_clock_ms": 61128,
+      "pre_incident_error_rate": 0.572115,
+      "post_incident_error_rate": 0.0034,
+      "playbook": "PB-0758e27a-3a94-4a94-bdf5-fdefbdd6300e-v1",
+      "precondition_verdict": "NO_PLAYBOOK",
+      "rejection_reason": "",
+      "last_error": "ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+      "provider": "gemini",
+      "model": "gemini-3.8-flash",
+      "measurement_source": "LIVE_PROVIDER"
+    },
+    {
+      "run_id": "RUN-fc6f5e75-d8b4-42da-ae02-407ea1f1d3d1",
+      "execution_mode": "WARM_REPLAY",
+      "status": "COMPLETED",
+      "current_step": 1,
+      "llm_calls": 0,
+      "mcp_tool_calls": 1,
+      "total_tokens": 0,
+      "falkordb_compute_ms": 2.787818,
+      "wall_clock_ms": 823,
+      "pre_incident_error_rate": 0.572115,
+      "post_incident_error_rate": 0.0034,
+      "playbook": "PB-0758e27a-3a94-4a94-bdf5-fdefbdd6300e-v1",
+      "precondition_verdict": "VALID_REPLAY",
+      "rejection_reason": "",
+      "last_error": null,
+      "provider": "gemini",
+      "model": "gemini-3.8-flash",
+      "measurement_source": null
+    },
+    {
+      "run_id": "RUN-d3ece552-c547-4b72-938b-62a3edfc44ab",
+      "execution_mode": "REJECTED_REPLAY_REINVESTIGATION",
+      "status": "COMPLETED",
+      "current_step": 8,
+      "llm_calls": 8,
+      "mcp_tool_calls": 8,
+      "total_tokens": 28043,
+      "falkordb_compute_ms": 20.784637,
+      "wall_clock_ms": 30394,
+      "pre_incident_error_rate": 0.572115,
+      "post_incident_error_rate": 0.002,
+      "playbook": "PB-18fde7ac-ffca-4512-8ae5-9d83e1cde925-v2",
+      "precondition_verdict": "REJECTED_STALE_POLICY",
+      "rejection_reason": "Playbook PB-0758e27a-3a94-4a94-bdf5-fdefbdd6300e-v1 relies on Decision DEC-02, which is no longer ACTIVE.",
+      "last_error": "",
+      "provider": "gemini",
+      "model": "gemini-3.8-flash",
+      "measurement_source": "LIVE_PROVIDER"
+    }
+  ],
+  "services": [
+    {
+      "name": "checkout-api",
+      "error_rate": 0.002,
+      "p99_latency_ms": 240.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 200,
+      "circuit_breaker": false
+    },
+    {
+      "name": "fraud-engine",
+      "error_rate": 0.002,
+      "p99_latency_ms": 15.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 200,
+      "circuit_breaker": false
+    },
+    {
+      "name": "ledger-db-proxy",
+      "error_rate": 0.002,
+      "p99_latency_ms": 30.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 200,
+      "circuit_breaker": false
+    },
+    {
+      "name": "notification-worker",
+      "error_rate": 0.002,
+      "p99_latency_ms": 15.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 200,
+      "circuit_breaker": false
+    },
+    {
+      "name": "payment-orchestrator",
+      "error_rate": 0.002,
+      "p99_latency_ms": 225.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 200,
+      "circuit_breaker": false
+    },
+    {
+      "name": "redis-session-cluster",
+      "error_rate": 0.002,
+      "p99_latency_ms": 190.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 500,
+      "circuit_breaker": false
+    },
+    {
+      "name": "token-auth-service",
+      "error_rate": 0.002,
+      "p99_latency_ms": 210.0,
+      "status": "HEALTHY",
+      "timeout_ms": 500,
+      "max_pool_size": 100,
+      "circuit_breaker": true
+    },
+    {
+      "name": "web-storefront",
+      "error_rate": 0.002,
+      "p99_latency_ms": 255.0,
+      "status": "HEALTHY",
+      "timeout_ms": 2000,
+      "max_pool_size": 200,
+      "circuit_breaker": false
+    }
+  ],
+  "model": {
+    "provider": "gemini",
+    "model": "gemini-3.8-flash",
+    "configured": true,
+    "key_name": "GEMINI_API_KEY"
+  }
+}
