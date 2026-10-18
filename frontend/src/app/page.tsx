@@ -35,19 +35,7 @@ export default function Home(){
  const reset=async()=>{const d=await(await request("/reset-session",tenant,{})).json();setSession(d.session_id);setEvents([]);setSelected(-1);};
  const run=async(action:string,message?:string)=>{
   if(busy)return;setBusy(true);setError("");
-  try{
-   if(action==="reset"){await reset();return;}
-   if(action==="policy"||action==="simulate"){
-    const path=action==="policy"?"/ingest-contradiction":"/simulate";
-    add(await(await request(path,tenant,action==="simulate"?{action:"isolate"}:{})).json());
-   } else if(action==="security"){
-    await request("/api/security-policy?tenant="+tenant,tenant,{});
-   } else if(action==="cancel"){
-    await request("/api/runs/"+message+"/cancel?tenant="+tenant,tenant,{});
-   } else {
-    if(action==="replay")await reset();
-    const response=await request(action==="resume"?"/api/runs/"+message+"/resume?tenant="+tenant:"/api/runs",tenant,
-      action==="resume"?{}:{message:message||"Investigate ERR_AUTH_POOL_EXHAUSTED in checkout-api",interrupt_at_step:crash?3:null});
+  const consume=async(response:Response)=>{
     const reader=response.body!.getReader(),decoder=new TextDecoder();let buffer="";
     for(;;){const {done,value}=await reader.read();buffer+=decoder.decode(value,{stream:!done});
      let split;while((split=buffer.indexOf("\n\n"))>=0){
@@ -56,6 +44,20 @@ export default function Home(){
       if(raw){const data=JSON.parse(raw);if(["step","done","CRASH_SIMULATED"].includes(kind||"")&&data.summary){add(data);await refresh();setEvidenceTick(v=>v+1);}if(kind==="session")setSession(data.session_id);if(kind==="error")throw Error(data.summary||data.detail||"Run interrupted");}
      }if(done)break;
     }
+  };
+  try{
+   if(action==="reset"){await reset();return;}
+   if(action==="policy"||action==="simulate"||action==="security"){
+    const isolation=action==="simulate";
+    await consume(await request(isolation?"/api/scenarios/isolation":"/api/scenarios/policy",tenant,{security:action==="security"}));
+    setView(isolation?"shadow":"production");
+   } else if(action==="cancel"){
+    await request("/api/runs/"+message+"/cancel?tenant="+tenant,tenant,{});
+   } else {
+    if(action==="replay")await reset();
+    const response=await request(action==="resume"?"/api/runs/"+message+"/resume?tenant="+tenant:"/api/runs",tenant,
+      action==="resume"?{}:{message:message||"Investigate ERR_AUTH_POOL_EXHAUSTED in checkout-api",interrupt_at_step:crash?3:null});
+    await consume(response);
    }
    await refresh();
   }catch(e){setError(e instanceof Error?e.message:"Request failed");}
@@ -67,7 +69,7 @@ export default function Home(){
  <div className="workspace"><AgentConsole events={events} busy={busy} run={(a,m)=>void run(a,m)} select={setSelected} selected={selected} session={session}/>
  <div className="right-panel"><div className="view-tabs"><div><button className={view==="production"?"active":""} onClick={()=>setView("production")}>Company brain</button><button className={view==="shadow"?"active":""} onClick={()=>setView("shadow")}>Shadow sandbox</button></div><span><i/> LIVE GRAPH</span></div>
  <GraphCanvas data={stableGraph} highlighted={trace?.highlighted_node_ids||[]} graph={graphName}/>
- <TraceInspector trace={trace}/><EvidencePanel tenant={tenant} tick={evidenceTick} busy={busy} crash={crash} setCrash={setCrash} onAction={(a,id)=>void run(a,id)}/></div></div>
+ <TraceInspector trace={trace}/><EvidencePanel sandbox={view==="shadow"} tenant={tenant} tick={evidenceTick} busy={busy} crash={crash} setCrash={setCrash} onAction={(a,id)=>void run(a,id)}/></div></div>
  {error&&<div role="alert" className="error"><strong>Operation unavailable</strong><span>{error}</span><button onClick={()=>{setError("");void refresh().catch(e=>setError(e.message));}}>Retry connection</button><button aria-label="Dismiss error" onClick={()=>setError("")}>×</button></div>}
  <footer className="statusbar"><span><i/> AEGISGRAPH / VORTEXPAY LAB</span><span>CONNECTED ACTION <b>·</b> AGENT MEMORY <b>·</b> COMPANY BRAIN</span><span>POWERED BY FALKORDB ↗</span></footer></main>;
 }

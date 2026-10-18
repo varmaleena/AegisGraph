@@ -126,14 +126,18 @@ def simulate_action_in_shadow_graph(target_service: str, action: str, tenant: st
     if shadow in [n.decode() if isinstance(n, bytes) else n for n in names]:
         graph(shadow).delete()
     # GRAPH.COPY is a native FalkorDB snapshot; no Python topology cache.
+    copy_started=time.perf_counter()
     graph(tenant).copy(shadow)
+    copy_trace=dict(data=[],cypher_executed=f"GRAPH.COPY {tenant} {shadow}",
+                    execution_time_ms=(time.perf_counter()-copy_started)*1000,
+                    highlighted_node_ids=[],graph=shadow)
     params = dict(target_service=target_service)
-    traces = [run(shadow, IMPACT, params), run(shadow, CONNECTIVITY, params)]
+    traces = [copy_trace, run(shadow, IMPACT, params), run(shadow, CONNECTIVITY, params)]
     before = set(traces[-1]["data"][0]["reachable"])
     if action == "isolate":
         mutation = """
 MATCH (s:Service {name:$target_service})-[r:DEPENDS_ON]-()
-DELETE r SET s.status='ISOLATED' RETURN s.id AS id, [s.id] AS highlighted_node_ids
+DELETE r SET s.isolated=true RETURN s.id AS id, [s.id] AS highlighted_node_ids
 """
     else:
         # Roll back the unsafe configuration while keeping the current Slack policy.
@@ -143,15 +147,19 @@ SET s.timeout_ms=150, s.circuit_breaker=true, s.max_pool_size=120
 RETURN s.id AS id, [s.id] AS highlighted_node_ids
 """
     traces.append(run(shadow, mutation, params))
-    if action=="rollback":
-        from backend.simulator import recalculate_graph_telemetry
-        traces.append(recalculate_graph_telemetry(shadow))
     traces.append(run(shadow, CONNECTIVITY, params))
     after = set(traces[-1]["data"][0]["reachable"])
     lost = sorted(before-after)
+    if lost:
+        traces.append(run(shadow,"""
+UNWIND $names AS name MATCH (s:Service {name:name})
+SET s.dependency_unavailable=true RETURN s.id AS id
+""",dict(names=lost)))
+    from backend.simulator import recalculate_graph_telemetry
+    traces.append(recalculate_graph_telemetry(shadow))
     return dict(data=[dict(action=action, target=target_service, lost_connectivity=lost,
                 impacted_tier1_services=len(lost), safe=not lost,
-                configuration="150ms / circuit breaker / pool 64" if action=="rollback" else "isolated")],
+                configuration="150ms / circuit breaker / pool 120" if action=="rollback" else "isolated")],
         cypher_executed="\n".join(t["cypher_executed"] for t in traces),
         execution_time_ms=sum(t["execution_time_ms"] for t in traces),
         highlighted_node_ids=sorted(set(n for t in traces for n in t["highlighted_node_ids"])),

@@ -9,7 +9,7 @@ from backend.simulator import migrate_physics, inject_fault
 from backend.v2_policy import ensure_policy, active_policy,validate_config
 from backend.v2_tools import Mutation,fingerprint
 from backend.mcp_transport import connect
-from backend.model_client import ModelClient,public_settings
+from backend.model_client import ModelClient,public_settings,ModelPoolExhausted
 from openai import APIError
 
 MAX_STEPS=16
@@ -45,7 +45,7 @@ def begin(tenant,message,entry="checkout-api",error="ERR_AUTH_POOL_EXHAUSTED",in
     # Reject absent credentials before changing demo state.
     if not public_settings()["configured"]:raise ValueError("Configure a Gemini, Groq or OpenAI API key in local .env")
     with operation(tenant):
-        pending=run(tenant,"""MATCH (r:InvestigationRun) WHERE r.status IN ['IN_PROGRESS','INTERRUPTED_CRASH']
+        pending=run(tenant,"""MATCH (r:InvestigationRun) WHERE r.status IN ['IN_PROGRESS','INTERRUPTED_CRASH','INTERRUPTED_ERROR']
 RETURN r.run_id AS id LIMIT 1""")["data"]
         if pending:raise ValueError("Resume or cancel the existing run before injecting a new incident")
         migrate_physics(tenant);ensure_policy(tenant);inject_fault(tenant)
@@ -174,7 +174,11 @@ RETURN r.run_id AS id
                         calls=message.get("tool_calls",[])
                         if len(calls)!=1:raise ValueError("Model must choose one tool until measured recovery is verified")
                         pending=calls[0];messages.append(message)
+                        history=json.loads(state.get("provider_history_json") or "[]")
+                        history.append(dict(step=state["current_step"]+1,selection=getattr(model,"last_selection",None),
+                                            attempts=getattr(model,"attempts",[]),tokens=tokens))
                         update(tenant,rid,llm_calls=state["llm_calls"]+1,total_tokens=state["total_tokens"]+tokens,
+                               provider_history_json=json.dumps(history),
                                messages_checkpoint_json=json.dumps(messages),pending_tool_json=json.dumps(pending))
                     name=pending["function"]["name"];args=json.loads(pending["function"]["arguments"])
                     if name not in allowed:raise ValueError("Model chose an unregistered MCP tool")
@@ -213,7 +217,10 @@ RETURN r.run_id AS id
             leaf=leaf.exceptions[0]
         safe_message=(f"Model provider request failed: {type(leaf).__name__} (HTTP {getattr(leaf,'status_code','network')}). Check provider quota/authentication; no paid fallback is used."
                       if isinstance(leaf,APIError) else str(leaf)[:250])
-        update(tenant,rid,status="INTERRUPTED_CRASH",last_error=type(leaf).__name__+": "+safe_message)
+        status="INTERRUPTED_CRASH" if isinstance(leaf,(ModelPoolExhausted,APIError)) else "INTERRUPTED_ERROR"
+        update(tenant,rid,status=status,last_error=type(leaf).__name__+": "+safe_message)
+        if model is not None:
+            update(tenant,rid,last_provider_attempts_json=json.dumps(getattr(model,"attempts",[])))
         yield event(tenant,rid,"Run interrupted; durable checkpoint retained. "+safe_message,kind="error")
     finally:
         state=load(tenant,rid)

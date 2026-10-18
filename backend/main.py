@@ -59,6 +59,8 @@ def get_session(tenant: Tenant = "vortexpay_prod"):
 @app.post("/reset-session")
 def reset_session(req: Request):
     with operation(req.tenant):
+        from backend.v2_api import cleanup_failed_runs
+        cleanup_failed_runs(req.tenant)
         return dict(session_id=agents.new_session(req.tenant),events=[])
 
 @app.post("/ingest-contradiction")

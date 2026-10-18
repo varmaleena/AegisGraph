@@ -29,7 +29,7 @@ def calculate(configs):
                 timeout_error=max(timeout_error,0.004 if s["circuit_breaker"] and pool>=80
                     else min(.95,(child["p99_latency_ms"]-timeout)/child["p99_latency_ms"]+.35))
         starvation=0 if s["circuit_breaker"] else min(.85,max(0,pressure-25)/52)
-        local=max(.002,starvation,timeout_error)
+        local=max(.999 if s.get("isolated") or s.get("dependency_unavailable") else .002,starvation,timeout_error)
         # Critical dependency errors propagate with 0.85 coupling per service hop.
         inherited=max((c["error_rate"]*.85 for c in children),default=0)
         error=min(.999,max(local,inherited))

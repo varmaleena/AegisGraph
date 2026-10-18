@@ -6,7 +6,7 @@ The approved MASTER_SPEC_V2.md is retained unchanged in the repository root.
 The default adapter uses Gemini's OpenAI-compatible endpoint and a configurable model.
 Groq and OpenAI endpoints are supported by the same tool-calling adapter.
 A free tier is subject to the selected model's availability and your account's quotas.
-No paid fallback, automatic provider switch, or billing upgrade occurs.
+Only configured provider routes are used; billing settings are never changed. Gemini-first selection can fail over to an explicitly configured Groq key.
 Check these official pages for your account:
 - https://ai.google.dev/gemini-api/docs/pricing
 - https://ai.google.dev/gemini-api/docs/openai
@@ -19,7 +19,7 @@ For Groq, set GROQ_API_KEY locally, LLM_PROVIDER=groq and a supported LLM_MODEL.
 Then run docker compose up --build -d to recreate backend with the new environment.
 The public evidence endpoint returns only configured=true/false, never a key.
 Missing key returns a configuration error before a V2 incident is created.
-Quota/auth/network failures interrupt the run, retaining its checkpoint for resume.
+Provider failures exhaust bounded retries and configured routes before retaining the checkpoint for resume.
 The UI composer now sends the actual incident description to the model.
 
 ## Execution path
@@ -125,3 +125,24 @@ flowchart LR
  Compiler --> PB[Versioned Playbook]
  PB --> Gate
 ```
+
+## Resilience and scenario integration
+
+Gemini-first selection supports GEMINI_API_KEYS or three individual key variables,
+configurable model alternatives and an explicitly configured Groq fallback. All routes
+share a 90-second selection deadline (below the 120-second worker lease), with bounded
+per-attempt timeouts and 1s/2s backoff. Retry-After prevents an immediate retry of a
+throttled route. Keys do not grant additional shared-project quota. Active Groq-only
+configuration stays on Groq. Actual successful routes and sanitized attempts are
+persisted per step, preserving benchmark attribution across provider changes.
+
+Scenario 01 uses /api/scenarios/policy and streams interval/supersession queries and
+live precondition-gate evidence. Scenario 04 uses /api/scenarios/isolation, streams
+native GRAPH.COPY and reachability traces and recomputes sandbox DAG physics. Lost
+dependencies explicitly contribute unavailability; disconnected nodes are not falsely
+shown as healthy. The UI switches to sandbox graph and telemetry after isolation.
+Cancel/reset-session removes only expired, failed step-zero runs; useful checkpoints
+and active workers are preserved. Non-provider errors use INTERRUPTED_ERROR and remain
+resumable. Deliberate crashes and exhausted provider routes use INTERRUPTED_CRASH.
+
+Live deployment: https://aegisgraph-sand.vercel.app

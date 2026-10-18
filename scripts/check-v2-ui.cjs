@@ -16,7 +16,17 @@ const assert=require("node:assert/strict");
    await page.getByRole("alert").filter({hasText:/Configure.*API key/}).waitFor();
    await page.getByRole("button",{name:"Dismiss error"}).click();
   }
-  const response=page.waitForResponse(r=>r.url().includes("/api/security-policy")&&r.request().method()==="POST");
+  const policy=page.waitForResponse(r=>r.url().includes("/api/scenarios/policy")&&r.request().method()==="POST");
+  await page.getByRole("button",{name:/01.*Inject policy contradiction/}).click();
+  assert.equal((await policy).status(),200);
+  await page.waitForFunction(()=>!document.querySelector(".v2-controls button").disabled);
+  await page.getByText(/LIVE PLAYBOOK GATE/).waitFor();
+  const isolation=page.waitForResponse(r=>r.url().includes("/api/scenarios/isolation")&&r.request().method()==="POST");
+  await page.getByRole("button",{name:/04.*Simulate service isolation/}).click();
+  assert.equal((await isolation).status(),200);
+  await page.getByText("SHADOW SANDBOX TELEMETRY",{exact:true}).waitFor();
+  await page.getByRole("button",{name:/Company brain/}).click();
+  const response=page.waitForResponse(r=>r.url().includes("/api/scenarios/policy")&&r.request().method()==="POST");
   await page.getByRole("button",{name:/Inject security directive/}).click();
   assert.equal((await response).status(),200);
   await page.waitForFunction(()=>!document.querySelector(".v2-controls button").disabled);
@@ -25,6 +35,6 @@ const assert=require("node:assert/strict");
   await page.screenshot({path:"docs/v2-mobile.png",fullPage:true});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   assert.deepEqual(errors,[]);
-  console.log("PASS: V2 telemetry/evidence, honest missing-key error, crash toggle, security action, mobile overflow, no page errors");
+  console.log("PASS: V2 policy/isolation SSE, gate and shadow telemetry, crash toggle, security action, mobile overflow, no page errors");
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

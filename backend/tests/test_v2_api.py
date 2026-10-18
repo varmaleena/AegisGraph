@@ -101,3 +101,32 @@ def test_nested_provider_error_is_reported_without_secret(monkeypatch):
     assert "HTTP 429" in state["last_error"]
     assert "never-log-this-fixture-secret" not in state["last_error"]
     assert state["current_step"]==0 and state["status"]=="INTERRUPTED_CRASH"
+
+def test_v2_scenarios_stream_policy_gate_and_shadow_physics():
+    before=run(T,"MATCH (s:Service) RETURN properties(s) AS props ORDER BY s.name")["data"]
+    policy=api.post("/api/scenarios/policy",json={"tenant":T})
+    assert "event: step" in policy.text and "config_bounds_json" in policy.text
+    assert api.get("/api/evidence?tenant="+T).json()["gate"]["verdict"]=="NO_PLAYBOOK"
+    security=api.post("/api/scenarios/policy",json={"tenant":T,"security":True})
+    assert "DEC-03" in security.text
+    active=run(T,"MATCH (d:Decision {status:'ACTIVE'}) RETURN d.id AS id")["data"]
+    assert active==[{"id":"DEC-03"}]
+    shadow=api.post("/api/scenarios/isolation",json={"tenant":T})
+    assert "GRAPH.COPY tenant_beta tenant_beta_sandbox" in shadow.text
+    assert "dependency_unavailable" in shadow.text and "p99_latency_ms" in shadow.text
+    assert "event: done" in shadow.text
+    evidence=api.get("/api/evidence?tenant="+T+"&sandbox=true").json()
+    checkout=next(s for s in evidence["services"] if s["name"]=="checkout-api")
+    assert checkout["error_rate"]>=.99 and evidence["graph"]=="tenant_beta_sandbox"
+    assert run(T,"MATCH (s:Service) RETURN properties(s) AS props ORDER BY s.name")["data"]==before
+
+def test_cancel_and_reset_cleanup_only_failed_step_zero_runs(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY","fixture-only-never-sent")
+    rid=o.begin(T,"Empty failed attempt")
+    o.update(T,rid,status="INTERRUPTED_CRASH",worker_until=0)
+    assert api.post(f"/api/runs/{rid}/cancel?tenant="+T).status_code==200
+    assert run(T,"MATCH (r:InvestigationRun {run_id:$id}) RETURN r.id AS id",dict(id=rid))["data"]==[]
+    rid=o.begin(T,"Useful checkpoint")
+    o.update(T,rid,status="INTERRUPTED_CRASH",current_step=1)
+    assert api.post("/reset-session",json={"tenant":T}).status_code==200
+    assert o.load(T,rid)["current_step"]==1

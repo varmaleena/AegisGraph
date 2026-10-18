@@ -1,3 +1,5 @@
+> Implementation reference: the current model-directed architecture and running demo are described in README.md and docs/V2_WORKFLOW.md. This document preserves the original design context.
+
 
 # MASTER ENGINEERING SPECIFICATION: *AegisGraph*
 
@@ -152,9 +154,9 @@ cypher
 
 ---
 
-## 5. Core Cypher Queries & FalkorDB Algorithms (Rule 10 Deliverable)
+## 5. Core Cypher Queries & FalkorDB Algorithms
 
-Your backend *must* expose these 6 deterministic Cypher/Algorithm functions inside backend/mcp_tools.py and list them verbatim in your README.md.
+The original tool layer provides six parameterized Cypher/algorithm operations in backend/mcp_tools.py. The current V2 MCP worker and scenario endpoints are documented in README.md.
 
 ### Tool 1: trace_root_cause_and_blast_radius(service_name: str)
 
@@ -166,7 +168,7 @@ MATCH (upstream:Service)<-[:MODIFIED]-(pr:PR)<-[:AUTHORED]-(dev:Person)
 MATCH p = shortestPath((failing)-[:DEPENDS_ON*0..5]->(upstream))
 OPTIONAL MATCH (downstream:Service)-[:DEPENDS_ON*1..4]->(failing)
 OPTIONAL MATCH (team:Team)-[:OWNS]->(upstream)
-RETURN 
+RETURN
   [n IN nodes(p) | n.name] AS dependency_path,
   upstream.name AS root_service,
   pr.id AS suspect_pr,
@@ -200,7 +202,7 @@ cypher
 MATCH (s:Service {name: $service_name})<-[:GOVERNS]-(active:Decision {status: 'ACTIVE'})
 OPTIONAL MATCH (active)-[:DECIDED_BY]->(author:Person)
 OPTIONAL MATCH path = (active)-[:SUPERSEDES*1..5]->(old:Decision)
-RETURN 
+RETURN
   active.id AS active_decision_id,
   active.summary AS current_policy,
   active.source AS current_source,
@@ -241,7 +243,7 @@ Used by the *Commander Agent* at the start of any session to check if the graph 
 cypher
 MATCH (sig:SymptomSignature {error_code: $error_code, affected_service: $service_name})-[:TRIGGERS_PLAYBOOK]->(pb:Playbook)
 MATCH (pb)-[r:HAS_STEP]->(step:ActionStep)
-RETURN 
+RETURN
   pb.id AS playbook_id,
   pb.name AS playbook_name,
   pb.success_count AS prior_successes,

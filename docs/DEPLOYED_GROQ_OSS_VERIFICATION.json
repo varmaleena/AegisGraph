@@ -1,0 +1,1692 @@
+{
+  "events": [
+    {
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a"
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Navigator",
+      "summary": "Navigator executed inspect_service_telemetry_and_frontier through MCP.",
+      "trace": {
+        "data": [
+          {
+            "telemetry": {
+              "base_processing_ms": 15,
+              "circuit_breaker": false,
+              "current_load_rps": 1200,
+              "error_rate": 0.572115,
+              "id": "checkout-api",
+              "language": "Python",
+              "max_pool_size": 200,
+              "name": "checkout-api",
+              "p99_latency_ms": 380.0,
+              "status": "CRITICAL",
+              "tier": 1,
+              "timeout_ms": 2000
+            },
+            "dependencies": [
+              "payment-orchestrator",
+              "token-auth-service"
+            ],
+            "recent_prs": [],
+            "decisions": [],
+            "upstream_dependencies_count": 2,
+            "recent_prs_count": 0,
+            "governing_decisions_count": 0,
+            "highlighted_node_ids": [
+              "checkout-api"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH (s:Service {name:$name})\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nWITH s,collect(DISTINCT d.name) AS deps\nOPTIONAL MATCH (p:PR)-[:MODIFIED]->(s)\nWITH s,deps,collect(DISTINCT p.id) AS prs\nOPTIONAL MATCH (dec:Decision {status:'ACTIVE'})-[:GOVERNS]->(s)\nRETURN properties(s) AS telemetry, deps AS dependencies, prs AS recent_prs,\n collect(DISTINCT dec.id) AS decisions,\n size(deps) AS upstream_dependencies_count,size(prs) AS recent_prs_count,\n count(DISTINCT dec) AS governing_decisions_count,[s.id] AS highlighted_node_ids\n",
+        "execution_time_ms": 2.492979,
+        "highlighted_node_ids": [
+          "checkout-api"
+        ],
+        "graph": "tenant_beta",
+        "unexplored_edges": {
+          "dependencies": [
+            "payment-orchestrator",
+            "token-auth-service"
+          ],
+          "recent_prs": [],
+          "decisions": []
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Navigator",
+      "summary": "Navigator executed traverse_dependency_SingleOrMultiHop through MCP.",
+      "trace": {
+        "data": [
+          {
+            "path": [
+              "checkout-api",
+              "token-auth-service"
+            ],
+            "dependency": "token-auth-service",
+            "error_rate": 0.673077,
+            "p99_latency_ms": 350.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "token-auth-service"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator",
+              "token-auth-service"
+            ],
+            "dependency": "token-auth-service",
+            "error_rate": 0.673077,
+            "p99_latency_ms": 350.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator",
+              "token-auth-service"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator"
+            ],
+            "dependency": "payment-orchestrator",
+            "error_rate": 0.572115,
+            "p99_latency_ms": 365.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "token-auth-service",
+              "redis-session-cluster"
+            ],
+            "dependency": "redis-session-cluster",
+            "error_rate": 0.002,
+            "p99_latency_ms": 190.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "token-auth-service",
+              "redis-session-cluster"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator",
+              "ledger-db-proxy"
+            ],
+            "dependency": "ledger-db-proxy",
+            "error_rate": 0.002,
+            "p99_latency_ms": 30.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator",
+              "ledger-db-proxy"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator",
+              "fraud-engine"
+            ],
+            "dependency": "fraud-engine",
+            "error_rate": 0.002,
+            "p99_latency_ms": 15.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator",
+              "fraud-engine"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH p=(s:Service {name:$name})-[:DEPENDS_ON*1..2]->(dep:Service)\nRETURN [n IN nodes(p)|n.name] AS path, dep.name AS dependency,\n dep.error_rate AS error_rate,dep.p99_latency_ms AS p99_latency_ms,\n [n IN nodes(p)|n.id] AS highlighted_node_ids\nORDER BY error_rate DESC\n",
+        "execution_time_ms": 1.204281,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service"
+        ],
+        "graph": "tenant_beta",
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Navigator",
+      "summary": "Navigator executed inspect_recent_prs_and_authors through MCP.",
+      "trace": {
+        "data": [
+          {
+            "pr_id": "PR-409",
+            "title": "Reduce auth pool timeout to 150ms",
+            "config_diff": "{\"timeout_ms\":{\"before\":5000,\"after\":150},\"max_pool_size\":{\"before\":100,\"after\":20},\"circuit_breaker\":{\"after\":false}}",
+            "author": "Elena Rostova",
+            "timestamp": 1792019700,
+            "highlighted_node_ids": [
+              "Elena Rostova",
+              "PR-409",
+              "token-auth-service"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH (person:Person)-[:AUTHORED]->(p:PR)-[:MODIFIED]->(s:Service {name:$name})\nRETURN p.id AS pr_id,p.title AS title,p.config_diff AS config_diff,\n person.name AS author,p.timestamp AS timestamp,[person.id,p.id,s.id] AS highlighted_node_ids\nORDER BY timestamp DESC\n",
+        "execution_time_ms": 2.582354,
+        "highlighted_node_ids": [
+          "Elena Rostova",
+          "PR-409",
+          "token-auth-service"
+        ],
+        "graph": "tenant_beta",
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "CRASH_SIMULATED",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Commander",
+      "summary": "CRASH_SIMULATED: worker stopped after a durable checkpoint.",
+      "trace": {
+        "data": [],
+        "cypher_executed": "",
+        "execution_time_ms": 0,
+        "highlighted_node_ids": [],
+        "graph": "tenant_beta"
+      }
+    },
+    {
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a"
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Scribe",
+      "summary": "Scribe executed query_bitemporal_policies through MCP.",
+      "trace": {
+        "data": [
+          {
+            "active_decision_id": "DEC-02",
+            "current_policy": "Never raise auth timeout above 300ms; use pool >=100 with circuit breaking.",
+            "current_source": "SLACK-882",
+            "valid_from": 1792015200,
+            "decided_by": "Sarah Chen",
+            "superseded_history": [
+              {
+                "id": "DEC-01",
+                "summary": "Use a 5000ms connection pool timeout.",
+                "source": "DOC-101",
+                "valid_to": 1792015200
+              }
+            ],
+            "highlighted_node_ids": [
+              "token-auth-service",
+              "DEC-02",
+              "Sarah Chen",
+              "DEC-02",
+              "DEC-01"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH (s:Service {name:$service_name})<-[:GOVERNS]-(active:Decision)\nWHERE active.valid_from <= $valid_at AND (active.valid_to=0 OR $valid_at < active.valid_to)\n AND active.recorded_from <= $known_at AND (active.recorded_to=0 OR $known_at < active.recorded_to)\nOPTIONAL MATCH (active)-[:DECIDED_BY]->(author:Person)\nOPTIONAL MATCH path=(active)-[:SUPERSEDES*1..5]->(old:Decision)\nRETURN active.id AS active_decision_id, active.summary AS current_policy,\n active.source AS current_source, active.valid_from AS valid_from,\n author.name AS decided_by,\n CASE WHEN path IS NULL THEN [] ELSE\n [d IN nodes(path) WHERE d <> active |\n {id:d.id, summary:d.summary, source:d.source, valid_to:d.valid_to}] END AS superseded_history,\n [s.id,active.id,author.id] + CASE WHEN path IS NULL THEN [] ELSE [d IN nodes(path)|d.id] END\n AS highlighted_node_ids\n\n\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n",
+        "execution_time_ms": 3.0669009999999997,
+        "highlighted_node_ids": [
+          "DEC-01",
+          "DEC-02",
+          "Sarah Chen",
+          "token-auth-service"
+        ],
+        "graph": "tenant_beta",
+        "policy": {
+          "id": "DEC-02",
+          "summary": "Never raise auth timeout above 300ms; use pool >=100 with circuit breaking.",
+          "bounds": {
+            "min_timeout_ms": 1,
+            "max_timeout_ms": 300,
+            "min_pool_size": 100,
+            "require_circuit_breaker": true
+          }
+        },
+        "unexplored_edges": {
+          "supersession_lineage": true
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Commander",
+      "summary": "Commander executed simulate_config_mutation_in_sandbox through MCP.",
+      "trace": {
+        "data": [
+          {
+            "safe": true,
+            "before": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 380.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 365.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.673077,
+                "p99_latency_ms": 350.0,
+                "status": "CRITICAL",
+                "timeout_ms": 150,
+                "max_pool_size": 20,
+                "circuit_breaker": false
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.486298,
+                "p99_latency_ms": 395.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "after": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.0034,
+                "p99_latency_ms": 240.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.0034,
+                "p99_latency_ms": 225.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.004,
+                "p99_latency_ms": 210.0,
+                "status": "HEALTHY",
+                "timeout_ms": 150,
+                "max_pool_size": 120,
+                "circuit_breaker": true
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.00289,
+                "p99_latency_ms": 255.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "decision_id": "DEC-02"
+          }
+        ],
+        "graph": "tenant_beta_sandbox",
+        "cypher_executed": "\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\nMATCH (s:Service) RETURN properties(s) AS properties\nMATCH (a:Service)-[r:DEPENDS_ON]->(b:Service) RETURN a.id AS a,b.id AS b,properties(r) AS properties\nUNWIND $nodes AS n CREATE (s:Service) SET s=n.properties RETURN s.id AS id\nUNWIND $edges AS e MATCH (a:Service {id:e.a}),(b:Service {id:e.b})\nCREATE (a)-[r:DEPENDS_ON]->(b) SET r=e.properties RETURN a.id AS id\n\nMATCH (s:Service {name:$service_name})\nSET s.timeout_ms=$timeout_ms,s.max_pool_size=$max_pool_size,s.circuit_breaker=$circuit_breaker\nRETURN s.name AS name,[s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service)\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN properties(s) AS config, collect(d.name) AS dependencies\n\n\nUNWIND $rows AS row MATCH (s:Service {name:row.name})\nSET s.p99_latency_ms=row.p99_latency_ms, s.error_rate=row.error_rate, s.status=row.status\nRETURN s.name AS name, s.error_rate AS error_rate, s.p99_latency_ms AS p99_latency_ms,\n s.status AS status, [s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nCREATE (s:Simulation {id:$id,run_id:$run_id,config_json:$config,input_hash:$fp,\n decision_id:$decision,safe:$safe})\nRETURN s.id AS id\n",
+        "execution_time_ms": 9.350135,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "notification-worker",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service",
+          "web-storefront"
+        ],
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "error",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Commander",
+      "summary": "Run interrupted; durable checkpoint retained. Model provider request failed: RateLimitError (HTTP 429). Check provider quota/authentication; no paid fallback is used.",
+      "trace": {
+        "data": [],
+        "cypher_executed": "",
+        "execution_time_ms": 0,
+        "highlighted_node_ids": [],
+        "graph": "tenant_beta"
+      }
+    },
+    {
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a"
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Commander",
+      "summary": "Commander executed apply_verified_mutation_to_prod through MCP.",
+      "trace": {
+        "data": [
+          {
+            "verified": true,
+            "pre_error_rate": 0.572115,
+            "post_error_rate": 0.0034,
+            "p99_latency_ms": 240.0,
+            "decision_id": "DEC-02",
+            "before": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 380.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 365.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.673077,
+                "p99_latency_ms": 350.0,
+                "status": "CRITICAL",
+                "timeout_ms": 150,
+                "max_pool_size": 20,
+                "circuit_breaker": false
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.486298,
+                "p99_latency_ms": 395.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "after": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.0034,
+                "p99_latency_ms": 240.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.0034,
+                "p99_latency_ms": 225.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.004,
+                "p99_latency_ms": 210.0,
+                "status": "HEALTHY",
+                "timeout_ms": 150,
+                "max_pool_size": 120,
+                "circuit_breaker": true
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.00289,
+                "p99_latency_ms": 255.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ]
+          }
+        ],
+        "graph": "tenant_beta",
+        "cypher_executed": "\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n\n\nMATCH (a:AppliedMutation {run_id:$rid,args_json:$args})\nRETURN a.result_json AS result,a.post_fingerprint AS fp\n\nMATCH (p:PR {id:$id})-[:MODIFIED]->(:Service {name:$name}) RETURN p.id AS id\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\n\nMATCH (s:Simulation {run_id:$run_id,config_json:$config,input_hash:$fp,decision_id:$decision,safe:true})\nRETURN s.id AS id LIMIT 1\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service {name:$service_name})\nSET s.timeout_ms=$timeout_ms,s.max_pool_size=$max_pool_size,s.circuit_breaker=$circuit_breaker\nRETURN s.name AS name,[s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service)\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN properties(s) AS config, collect(d.name) AS dependencies\n\n\nUNWIND $rows AS row MATCH (s:Service {name:row.name})\nSET s.p99_latency_ms=row.p99_latency_ms, s.error_rate=row.error_rate, s.status=row.status\nRETURN s.name AS name, s.error_rate AS error_rate, s.p99_latency_ms AS p99_latency_ms,\n s.status AS status, [s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\n\nCREATE (:AppliedMutation {id:$id,run_id:$rid,args_json:$args,result_json:$result,post_fingerprint:$fp})\nRETURN 1 AS saved\n",
+        "execution_time_ms": 6.7835909999999995,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "notification-worker",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service",
+          "web-storefront"
+        ],
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "done",
+      "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+      "agent": "Commander",
+      "summary": "Measured recovery verified; versioned procedural memory saved.",
+      "trace": {
+        "data": [],
+        "cypher_executed": "",
+        "execution_time_ms": 0,
+        "highlighted_node_ids": [],
+        "graph": "tenant_beta"
+      }
+    },
+    {
+      "run_id": "RUN-bd6f5979-06a9-4105-aab2-bdbdfab414ff"
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-bd6f5979-06a9-4105-aab2-bdbdfab414ff",
+      "agent": "Commander",
+      "summary": "Verified playbook replay restored measured telemetry.",
+      "trace": {
+        "data": [
+          {
+            "verified": true,
+            "pre_error_rate": 0.572115,
+            "post_error_rate": 0.0034,
+            "p99_latency_ms": 240.0,
+            "decision_id": "DEC-02",
+            "before": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 380.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 365.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.673077,
+                "p99_latency_ms": 350.0,
+                "status": "CRITICAL",
+                "timeout_ms": 150,
+                "max_pool_size": 20,
+                "circuit_breaker": false
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.486298,
+                "p99_latency_ms": 395.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "after": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.0034,
+                "p99_latency_ms": 240.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.0034,
+                "p99_latency_ms": 225.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.004,
+                "p99_latency_ms": 210.0,
+                "status": "HEALTHY",
+                "timeout_ms": 150,
+                "max_pool_size": 120,
+                "circuit_breaker": true
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.00289,
+                "p99_latency_ms": 255.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ]
+          }
+        ],
+        "graph": "tenant_beta",
+        "cypher_executed": "\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n\n\nMATCH (a:AppliedMutation {run_id:$rid,args_json:$args})\nRETURN a.result_json AS result,a.post_fingerprint AS fp\n\nMATCH (p:PR {id:$id})-[:MODIFIED]->(:Service {name:$name}) RETURN p.id AS id\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\n\nMATCH (s:Simulation {run_id:$run_id,config_json:$config,input_hash:$fp,decision_id:$decision,safe:true})\nRETURN s.id AS id LIMIT 1\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service {name:$service_name})\nSET s.timeout_ms=$timeout_ms,s.max_pool_size=$max_pool_size,s.circuit_breaker=$circuit_breaker\nRETURN s.name AS name,[s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service)\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN properties(s) AS config, collect(d.name) AS dependencies\n\n\nUNWIND $rows AS row MATCH (s:Service {name:row.name})\nSET s.p99_latency_ms=row.p99_latency_ms, s.error_rate=row.error_rate, s.status=row.status\nRETURN s.name AS name, s.error_rate AS error_rate, s.p99_latency_ms AS p99_latency_ms,\n s.status AS status, [s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\n\nCREATE (:AppliedMutation {id:$id,run_id:$rid,args_json:$args,result_json:$result,post_fingerprint:$fp})\nRETURN 1 AS saved\n",
+        "execution_time_ms": 7.415533,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "notification-worker",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service",
+          "web-storefront"
+        ],
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "done",
+      "run_id": "RUN-bd6f5979-06a9-4105-aab2-bdbdfab414ff",
+      "agent": "Commander",
+      "summary": "Measured recovery verified; versioned procedural memory saved.",
+      "trace": {
+        "data": [],
+        "cypher_executed": "",
+        "execution_time_ms": 0,
+        "highlighted_node_ids": [],
+        "graph": "tenant_beta"
+      }
+    },
+    {
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322"
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Navigator",
+      "summary": "Navigator executed inspect_service_telemetry_and_frontier through MCP.",
+      "trace": {
+        "data": [
+          {
+            "telemetry": {
+              "base_processing_ms": 15,
+              "circuit_breaker": false,
+              "current_load_rps": 1200,
+              "error_rate": 0.572115,
+              "id": "checkout-api",
+              "language": "Python",
+              "max_pool_size": 200,
+              "name": "checkout-api",
+              "p99_latency_ms": 380.0,
+              "status": "CRITICAL",
+              "tier": 1,
+              "timeout_ms": 2000
+            },
+            "dependencies": [
+              "payment-orchestrator",
+              "token-auth-service"
+            ],
+            "recent_prs": [],
+            "decisions": [],
+            "upstream_dependencies_count": 2,
+            "recent_prs_count": 0,
+            "governing_decisions_count": 0,
+            "highlighted_node_ids": [
+              "checkout-api"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH (s:Service {name:$name})\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nWITH s,collect(DISTINCT d.name) AS deps\nOPTIONAL MATCH (p:PR)-[:MODIFIED]->(s)\nWITH s,deps,collect(DISTINCT p.id) AS prs\nOPTIONAL MATCH (dec:Decision {status:'ACTIVE'})-[:GOVERNS]->(s)\nRETURN properties(s) AS telemetry, deps AS dependencies, prs AS recent_prs,\n collect(DISTINCT dec.id) AS decisions,\n size(deps) AS upstream_dependencies_count,size(prs) AS recent_prs_count,\n count(DISTINCT dec) AS governing_decisions_count,[s.id] AS highlighted_node_ids\n",
+        "execution_time_ms": 2.172906,
+        "highlighted_node_ids": [
+          "checkout-api"
+        ],
+        "graph": "tenant_beta",
+        "unexplored_edges": {
+          "dependencies": [
+            "payment-orchestrator",
+            "token-auth-service"
+          ],
+          "recent_prs": [],
+          "decisions": []
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Scribe",
+      "summary": "Scribe executed query_bitemporal_policies through MCP. Tool rejected proposal; model will revise.",
+      "trace": {
+        "data": [
+          {
+            "error": "Exactly one structured active policy is required"
+          }
+        ],
+        "graph": "tenant_beta",
+        "highlighted_node_ids": [],
+        "execution_time_ms": 3.138136,
+        "cypher_executed": "\nMATCH (s:Service {name:$service_name})<-[:GOVERNS]-(active:Decision)\nWHERE active.valid_from <= $valid_at AND (active.valid_to=0 OR $valid_at < active.valid_to)\n AND active.recorded_from <= $known_at AND (active.recorded_to=0 OR $known_at < active.recorded_to)\nOPTIONAL MATCH (active)-[:DECIDED_BY]->(author:Person)\nOPTIONAL MATCH path=(active)-[:SUPERSEDES*1..5]->(old:Decision)\nRETURN active.id AS active_decision_id, active.summary AS current_policy,\n active.source AS current_source, active.valid_from AS valid_from,\n author.name AS decided_by,\n CASE WHEN path IS NULL THEN [] ELSE\n [d IN nodes(path) WHERE d <> active |\n {id:d.id, summary:d.summary, source:d.source, valid_to:d.valid_to}] END AS superseded_history,\n [s.id,active.id,author.id] + CASE WHEN path IS NULL THEN [] ELSE [d IN nodes(path)|d.id] END\n AS highlighted_node_ids\n\n\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n",
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Navigator",
+      "summary": "Navigator executed traverse_dependency_SingleOrMultiHop through MCP.",
+      "trace": {
+        "data": [
+          {
+            "path": [
+              "checkout-api",
+              "token-auth-service"
+            ],
+            "dependency": "token-auth-service",
+            "error_rate": 0.673077,
+            "p99_latency_ms": 350.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "token-auth-service"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator",
+              "token-auth-service"
+            ],
+            "dependency": "token-auth-service",
+            "error_rate": 0.673077,
+            "p99_latency_ms": 350.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator",
+              "token-auth-service"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator"
+            ],
+            "dependency": "payment-orchestrator",
+            "error_rate": 0.572115,
+            "p99_latency_ms": 365.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "token-auth-service",
+              "redis-session-cluster"
+            ],
+            "dependency": "redis-session-cluster",
+            "error_rate": 0.002,
+            "p99_latency_ms": 190.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "token-auth-service",
+              "redis-session-cluster"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator",
+              "ledger-db-proxy"
+            ],
+            "dependency": "ledger-db-proxy",
+            "error_rate": 0.002,
+            "p99_latency_ms": 30.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator",
+              "ledger-db-proxy"
+            ]
+          },
+          {
+            "path": [
+              "checkout-api",
+              "payment-orchestrator",
+              "fraud-engine"
+            ],
+            "dependency": "fraud-engine",
+            "error_rate": 0.002,
+            "p99_latency_ms": 15.0,
+            "highlighted_node_ids": [
+              "checkout-api",
+              "payment-orchestrator",
+              "fraud-engine"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH p=(s:Service {name:$name})-[:DEPENDS_ON*1..2]->(dep:Service)\nRETURN [n IN nodes(p)|n.name] AS path, dep.name AS dependency,\n dep.error_rate AS error_rate,dep.p99_latency_ms AS p99_latency_ms,\n [n IN nodes(p)|n.id] AS highlighted_node_ids\nORDER BY error_rate DESC\n",
+        "execution_time_ms": 0.939859,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service"
+        ],
+        "graph": "tenant_beta",
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Navigator",
+      "summary": "Navigator executed inspect_recent_prs_and_authors through MCP.",
+      "trace": {
+        "data": [
+          {
+            "pr_id": "PR-409",
+            "title": "Reduce auth pool timeout to 150ms",
+            "config_diff": "{\"timeout_ms\":{\"before\":5000,\"after\":150},\"max_pool_size\":{\"before\":100,\"after\":20},\"circuit_breaker\":{\"after\":false}}",
+            "author": "Elena Rostova",
+            "timestamp": 1792019700,
+            "highlighted_node_ids": [
+              "Elena Rostova",
+              "PR-409",
+              "token-auth-service"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH (person:Person)-[:AUTHORED]->(p:PR)-[:MODIFIED]->(s:Service {name:$name})\nRETURN p.id AS pr_id,p.title AS title,p.config_diff AS config_diff,\n person.name AS author,p.timestamp AS timestamp,[person.id,p.id,s.id] AS highlighted_node_ids\nORDER BY timestamp DESC\n",
+        "execution_time_ms": 0.949182,
+        "highlighted_node_ids": [
+          "Elena Rostova",
+          "PR-409",
+          "token-auth-service"
+        ],
+        "graph": "tenant_beta",
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Scribe",
+      "summary": "Scribe executed query_bitemporal_policies through MCP.",
+      "trace": {
+        "data": [
+          {
+            "active_decision_id": "DEC-03",
+            "current_policy": "Security directive: circuit breaker requires timeout >=450ms, pool >=100.",
+            "current_source": "SLACK-SEC-03",
+            "valid_from": 1792305030,
+            "decided_by": "Priya Nair",
+            "superseded_history": [
+              {
+                "id": "DEC-02",
+                "summary": "Never raise auth timeout above 300ms; use pool >=100 with circuit breaking.",
+                "source": "SLACK-882",
+                "valid_to": 1792305030
+              }
+            ],
+            "highlighted_node_ids": [
+              "token-auth-service",
+              "DEC-03",
+              "Priya Nair",
+              "DEC-03",
+              "DEC-02"
+            ]
+          },
+          {
+            "active_decision_id": "DEC-03",
+            "current_policy": "Security directive: circuit breaker requires timeout >=450ms, pool >=100.",
+            "current_source": "SLACK-SEC-03",
+            "valid_from": 1792305030,
+            "decided_by": "Priya Nair",
+            "superseded_history": [
+              {
+                "id": "DEC-02",
+                "summary": "Never raise auth timeout above 300ms; use pool >=100 with circuit breaking.",
+                "source": "SLACK-882",
+                "valid_to": 1792305030
+              },
+              {
+                "id": "DEC-01",
+                "summary": "Use a 5000ms connection pool timeout.",
+                "source": "DOC-101",
+                "valid_to": 1792015200
+              }
+            ],
+            "highlighted_node_ids": [
+              "token-auth-service",
+              "DEC-03",
+              "Priya Nair",
+              "DEC-03",
+              "DEC-02",
+              "DEC-01"
+            ]
+          }
+        ],
+        "cypher_executed": "\nMATCH (s:Service {name:$service_name})<-[:GOVERNS]-(active:Decision)\nWHERE active.valid_from <= $valid_at AND (active.valid_to=0 OR $valid_at < active.valid_to)\n AND active.recorded_from <= $known_at AND (active.recorded_to=0 OR $known_at < active.recorded_to)\nOPTIONAL MATCH (active)-[:DECIDED_BY]->(author:Person)\nOPTIONAL MATCH path=(active)-[:SUPERSEDES*1..5]->(old:Decision)\nRETURN active.id AS active_decision_id, active.summary AS current_policy,\n active.source AS current_source, active.valid_from AS valid_from,\n author.name AS decided_by,\n CASE WHEN path IS NULL THEN [] ELSE\n [d IN nodes(path) WHERE d <> active |\n {id:d.id, summary:d.summary, source:d.source, valid_to:d.valid_to}] END AS superseded_history,\n [s.id,active.id,author.id] + CASE WHEN path IS NULL THEN [] ELSE [d IN nodes(path)|d.id] END\n AS highlighted_node_ids\n\n\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n",
+        "execution_time_ms": 1.5801859999999999,
+        "highlighted_node_ids": [
+          "DEC-01",
+          "DEC-02",
+          "DEC-03",
+          "Priya Nair",
+          "token-auth-service"
+        ],
+        "graph": "tenant_beta",
+        "policy": {
+          "id": "DEC-03",
+          "summary": "Security directive: circuit breaker requires timeout >=450ms, pool >=100.",
+          "bounds": {
+            "min_timeout_ms": 450,
+            "max_timeout_ms": 1000,
+            "min_pool_size": 100,
+            "require_circuit_breaker": true
+          }
+        },
+        "unexplored_edges": {
+          "supersession_lineage": true
+        }
+      }
+    },
+    {
+      "kind": "error",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Commander",
+      "summary": "Run interrupted; durable checkpoint retained. Model provider request failed: RateLimitError (HTTP 429). Check provider quota/authentication; no paid fallback is used.",
+      "trace": {
+        "data": [],
+        "cypher_executed": "",
+        "execution_time_ms": 0,
+        "highlighted_node_ids": [],
+        "graph": "tenant_beta"
+      }
+    },
+    {
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322"
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Commander",
+      "summary": "Commander executed simulate_config_mutation_in_sandbox through MCP.",
+      "trace": {
+        "data": [
+          {
+            "safe": true,
+            "before": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 380.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 365.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.673077,
+                "p99_latency_ms": 350.0,
+                "status": "CRITICAL",
+                "timeout_ms": 150,
+                "max_pool_size": 20,
+                "circuit_breaker": false
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.486298,
+                "p99_latency_ms": 395.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "after": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.002,
+                "p99_latency_ms": 240.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.002,
+                "p99_latency_ms": 225.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.002,
+                "p99_latency_ms": 210.0,
+                "status": "HEALTHY",
+                "timeout_ms": 500,
+                "max_pool_size": 150,
+                "circuit_breaker": true
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.002,
+                "p99_latency_ms": 255.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "decision_id": "DEC-03"
+          }
+        ],
+        "graph": "tenant_beta_sandbox",
+        "cypher_executed": "\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\nMATCH (s:Service) RETURN properties(s) AS properties\nMATCH (a:Service)-[r:DEPENDS_ON]->(b:Service) RETURN a.id AS a,b.id AS b,properties(r) AS properties\nUNWIND $nodes AS n CREATE (s:Service) SET s=n.properties RETURN s.id AS id\nUNWIND $edges AS e MATCH (a:Service {id:e.a}),(b:Service {id:e.b})\nCREATE (a)-[r:DEPENDS_ON]->(b) SET r=e.properties RETURN a.id AS id\n\nMATCH (s:Service {name:$service_name})\nSET s.timeout_ms=$timeout_ms,s.max_pool_size=$max_pool_size,s.circuit_breaker=$circuit_breaker\nRETURN s.name AS name,[s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service)\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN properties(s) AS config, collect(d.name) AS dependencies\n\n\nUNWIND $rows AS row MATCH (s:Service {name:row.name})\nSET s.p99_latency_ms=row.p99_latency_ms, s.error_rate=row.error_rate, s.status=row.status\nRETURN s.name AS name, s.error_rate AS error_rate, s.p99_latency_ms AS p99_latency_ms,\n s.status AS status, [s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nCREATE (s:Simulation {id:$id,run_id:$run_id,config_json:$config,input_hash:$fp,\n decision_id:$decision,safe:$safe})\nRETURN s.id AS id\n",
+        "execution_time_ms": 8.196226000000001,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "notification-worker",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service",
+          "web-storefront"
+        ],
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Commander",
+      "summary": "Commander executed apply_verified_mutation_to_prod through MCP.",
+      "trace": {
+        "data": [
+          {
+            "verified": true,
+            "pre_error_rate": 0.572115,
+            "post_error_rate": 0.002,
+            "p99_latency_ms": 240.0,
+            "decision_id": "DEC-03",
+            "before": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 380.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.572115,
+                "p99_latency_ms": 365.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.673077,
+                "p99_latency_ms": 350.0,
+                "status": "CRITICAL",
+                "timeout_ms": 150,
+                "max_pool_size": 20,
+                "circuit_breaker": false
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.486298,
+                "p99_latency_ms": 395.0,
+                "status": "CRITICAL",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ],
+            "after": [
+              {
+                "name": "checkout-api",
+                "error_rate": 0.002,
+                "p99_latency_ms": 240.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "fraud-engine",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "ledger-db-proxy",
+                "error_rate": 0.002,
+                "p99_latency_ms": 30.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "notification-worker",
+                "error_rate": 0.002,
+                "p99_latency_ms": 15.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "payment-orchestrator",
+                "error_rate": 0.002,
+                "p99_latency_ms": 225.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              },
+              {
+                "name": "redis-session-cluster",
+                "error_rate": 0.002,
+                "p99_latency_ms": 190.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 500,
+                "circuit_breaker": false
+              },
+              {
+                "name": "token-auth-service",
+                "error_rate": 0.002,
+                "p99_latency_ms": 210.0,
+                "status": "HEALTHY",
+                "timeout_ms": 500,
+                "max_pool_size": 150,
+                "circuit_breaker": true
+              },
+              {
+                "name": "web-storefront",
+                "error_rate": 0.002,
+                "p99_latency_ms": 255.0,
+                "status": "HEALTHY",
+                "timeout_ms": 2000,
+                "max_pool_size": 200,
+                "circuit_breaker": false
+              }
+            ]
+          }
+        ],
+        "graph": "tenant_beta",
+        "cypher_executed": "\nMATCH (d:Decision {status:'ACTIVE'})-[:GOVERNS]->(:Service {name:$name})\nRETURN d.id AS id, d.config_bounds_json AS bounds, d.summary AS summary\n\n\nMATCH (a:AppliedMutation {run_id:$rid,args_json:$args})\nRETURN a.result_json AS result,a.post_fingerprint AS fp\n\nMATCH (p:PR {id:$id})-[:MODIFIED]->(:Service {name:$name}) RETURN p.id AS id\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\n\nMATCH (s:Simulation {run_id:$run_id,config_json:$config,input_hash:$fp,decision_id:$decision,safe:true})\nRETURN s.id AS id LIMIT 1\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service {name:$service_name})\nSET s.timeout_ms=$timeout_ms,s.max_pool_size=$max_pool_size,s.circuit_breaker=$circuit_breaker\nRETURN s.name AS name,[s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service)\nOPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN properties(s) AS config, collect(d.name) AS dependencies\n\n\nUNWIND $rows AS row MATCH (s:Service {name:row.name})\nSET s.p99_latency_ms=row.p99_latency_ms, s.error_rate=row.error_rate, s.status=row.status\nRETURN s.name AS name, s.error_rate AS error_rate, s.p99_latency_ms AS p99_latency_ms,\n s.status AS status, [s.id] AS highlighted_node_ids\n\n\nMATCH (s:Service) RETURN s.name AS name,s.error_rate AS error_rate,\n s.p99_latency_ms AS p99_latency_ms,s.status AS status,\n s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,s.circuit_breaker AS circuit_breaker\nORDER BY name\n\n\nMATCH (s:Service) OPTIONAL MATCH (s)-[:DEPENDS_ON]->(d:Service)\nRETURN s.name AS name, s.timeout_ms AS timeout_ms,s.max_pool_size AS max_pool_size,\n s.circuit_breaker AS circuit_breaker,s.base_processing_ms AS base_processing_ms,\n s.current_load_rps AS current_load_rps, collect(d.name) AS dependencies\nORDER BY name\n\n\nCREATE (:AppliedMutation {id:$id,run_id:$rid,args_json:$args,result_json:$result,post_fingerprint:$fp})\nRETURN 1 AS saved\n",
+        "execution_time_ms": 8.796053,
+        "highlighted_node_ids": [
+          "checkout-api",
+          "fraud-engine",
+          "ledger-db-proxy",
+          "notification-worker",
+          "payment-orchestrator",
+          "redis-session-cluster",
+          "token-auth-service",
+          "web-storefront"
+        ],
+        "unexplored_edges": {
+          "next": "Inspect dependencies, PRs or active policy based on the evidence; do not assume tool order."
+        }
+      }
+    },
+    {
+      "kind": "done",
+      "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+      "agent": "Commander",
+      "summary": "Measured recovery verified; versioned procedural memory saved.",
+      "trace": {
+        "data": [],
+        "cypher_executed": "",
+        "execution_time_ms": 0,
+        "highlighted_node_ids": [],
+        "graph": "tenant_beta"
+      }
+    }
+  ],
+  "evidence": {
+    "runs": [
+      {
+        "run_id": "RUN-e523e5ef-aaca-4c3d-96bb-a807e7eabb6a",
+        "execution_mode": "DISCOVERY",
+        "status": "COMPLETED",
+        "current_step": 6,
+        "llm_calls": 6,
+        "mcp_tool_calls": 6,
+        "total_tokens": 11455,
+        "falkordb_compute_ms": 25.480241,
+        "wall_clock_ms": 33366,
+        "pre_incident_error_rate": 0.572115,
+        "post_incident_error_rate": 0.0034,
+        "playbook": "PB-83caa905-8392-4809-85e7-a755770d390d-v1",
+        "precondition_verdict": "NO_PLAYBOOK",
+        "rejection_reason": "",
+        "last_error": "",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "measurement_source": "LIVE_PROVIDER"
+      },
+      {
+        "run_id": "RUN-bd6f5979-06a9-4105-aab2-bdbdfab414ff",
+        "execution_mode": "WARM_REPLAY",
+        "status": "COMPLETED",
+        "current_step": 1,
+        "llm_calls": 0,
+        "mcp_tool_calls": 1,
+        "total_tokens": 0,
+        "falkordb_compute_ms": 7.415533,
+        "wall_clock_ms": 8553,
+        "pre_incident_error_rate": 0.572115,
+        "post_incident_error_rate": 0.0034,
+        "playbook": "PB-83caa905-8392-4809-85e7-a755770d390d-v1",
+        "precondition_verdict": "VALID_REPLAY",
+        "rejection_reason": "",
+        "last_error": "",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "measurement_source": null
+      },
+      {
+        "run_id": "RUN-04251f4b-c7b1-4663-acb4-fcb392634322",
+        "execution_mode": "REJECTED_REPLAY_REINVESTIGATION",
+        "status": "COMPLETED",
+        "current_step": 7,
+        "llm_calls": 7,
+        "mcp_tool_calls": 7,
+        "total_tokens": 15385,
+        "falkordb_compute_ms": 25.772548,
+        "wall_clock_ms": 24571,
+        "pre_incident_error_rate": 0.572115,
+        "post_incident_error_rate": 0.002,
+        "playbook": "PB-e6bc29d8-fab6-43dd-b1f6-cff9f8ea83ab-v2",
+        "precondition_verdict": "REJECTED_STALE_POLICY",
+        "rejection_reason": "Playbook PB-83caa905-8392-4809-85e7-a755770d390d-v1 relies on Decision DEC-02, which is no longer ACTIVE.",
+        "last_error": "",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "measurement_source": "LIVE_PROVIDER"
+      }
+    ],
+    "services": [
+      {
+        "name": "checkout-api",
+        "error_rate": 0.002,
+        "p99_latency_ms": 240.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 200,
+        "circuit_breaker": false
+      },
+      {
+        "name": "fraud-engine",
+        "error_rate": 0.002,
+        "p99_latency_ms": 15.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 200,
+        "circuit_breaker": false
+      },
+      {
+        "name": "ledger-db-proxy",
+        "error_rate": 0.002,
+        "p99_latency_ms": 30.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 200,
+        "circuit_breaker": false
+      },
+      {
+        "name": "notification-worker",
+        "error_rate": 0.002,
+        "p99_latency_ms": 15.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 200,
+        "circuit_breaker": false
+      },
+      {
+        "name": "payment-orchestrator",
+        "error_rate": 0.002,
+        "p99_latency_ms": 225.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 200,
+        "circuit_breaker": false
+      },
+      {
+        "name": "redis-session-cluster",
+        "error_rate": 0.002,
+        "p99_latency_ms": 190.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 500,
+        "circuit_breaker": false
+      },
+      {
+        "name": "token-auth-service",
+        "error_rate": 0.002,
+        "p99_latency_ms": 210.0,
+        "status": "HEALTHY",
+        "timeout_ms": 500,
+        "max_pool_size": 150,
+        "circuit_breaker": true
+      },
+      {
+        "name": "web-storefront",
+        "error_rate": 0.002,
+        "p99_latency_ms": 255.0,
+        "status": "HEALTHY",
+        "timeout_ms": 2000,
+        "max_pool_size": 200,
+        "circuit_breaker": false
+      }
+    ],
+    "model": {
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "configured": true,
+      "key_name": "GROQ_API_KEY"
+    }
+  },
+  "scope": "Completed deployed Groq GPT-OSS workflows before the resilience/scenario patch; earlier cancelled attempts omitted."
+}
